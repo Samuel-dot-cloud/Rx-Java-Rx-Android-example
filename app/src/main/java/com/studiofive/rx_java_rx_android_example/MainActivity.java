@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -36,20 +37,33 @@ public class MainActivity extends AppCompatActivity {
         final Task task  = new Task("Walk the dog", false, 3);
 //       final List<Task> tasks = DataSource.createTasksList();
 
-        Observable<Integer> observable = Observable
+        Observable<Task> observable = Observable
                 .range(0, 9)
                 .subscribeOn(Schedulers.io())
+                .map(new Function<Integer, Task>() {
+                    @Override
+                    public Task apply(Integer integer) throws Throwable {
+                        Log.d(TAG, "apply: " + Thread.currentThread().getName());
+                        return new Task("Task with priority: " + String.valueOf(integer), false, integer);
+                    }
+                })
+                .takeWhile(new Predicate<Task>() {
+                    @Override
+                    public boolean test(Task task) throws Throwable {
+                        return task.getPriority() < 9;
+                    }
+                })
                 .observeOn(AndroidSchedulers.mainThread());
 
-        observable.subscribe(new Observer<Integer>() {
+        observable.subscribe(new Observer<Task>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(@NonNull Integer integer) {
-                Log.d(TAG, "onNext: " + integer);
+            public void onNext(@NonNull Task task) {
+                Log.d(TAG, "onNext: " + task.getPriority());
             }
 
             @Override
@@ -62,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
     }
 
     @Override

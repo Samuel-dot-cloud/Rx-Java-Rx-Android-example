@@ -3,6 +3,7 @@ package com.studiofive.rx_java_rx_android_example;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -34,36 +35,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         text = findViewById(R.id.text);
 
-        final Task task  = new Task("Walk the dog", false, 3);
-//       final List<Task> tasks = DataSource.createTasksList();
+// Create an Observable
+        Observable<Task> taskObservable = Observable
+                .fromIterable(DataSource.createTasksList())
+                .subscribeOn(Schedulers.io());
 
-        Observable<Integer> observable = Observable
-                .range(0, 9)
-                .subscribeOn(Schedulers.io())
-               .repeat(3)
-                .observeOn(AndroidSchedulers.mainThread());
+        taskObservable
+                .buffer(2) // Apply the Buffer() operator
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<Task>>() { // Subscribe and view the emitted results
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+                    @Override
+                    public void onNext(List<Task> tasks) {
+                        Log.d(TAG, "onNext: bundle results: -------------------");
+                        for(Task task: tasks){
+                            Log.d(TAG, "onNext: " + task.getDescription());
+                        }
+                    }
 
-        observable.subscribe(new Observer<Integer>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(@NonNull Integer integer) {
-                Log.d(TAG, "onNext: " + integer);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+                    @Override
+                    public void onComplete() {
+                    }
+                });
 
 
     }

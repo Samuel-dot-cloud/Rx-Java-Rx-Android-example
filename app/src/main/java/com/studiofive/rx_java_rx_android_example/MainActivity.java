@@ -9,6 +9,8 @@ import android.widget.TextView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -29,40 +31,41 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         text = findViewById(R.id.text);
 
+        final Task task  = new Task("Walk the dog", false, 3);
+
         Observable<Task> taskObservable = Observable
-                .fromIterable(DataSource.createTasksList())
-                .subscribeOn(Schedulers.io())
-                .filter(new Predicate<Task>() {
+                .create(new ObservableOnSubscribe<Task>() {
                     @Override
-                    public boolean test(Task task) throws Throwable {
-                        Log.d(TAG, "test: " + Thread.currentThread().getName());
-                        return task.isComplete();
+                    public void subscribe(@NonNull ObservableEmitter<Task> emitter) throws Throwable {
+                        if (!emitter.isDisposed()){
+                            emitter.onNext(task);
+                            emitter.onComplete();
+                        }
                     }
                 })
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
         taskObservable.subscribe(new Observer<Task>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
-                Log.d(TAG, "onSubscribe called.");
-                disposable.add(d);
+
             }
 
             @Override
             public void onNext(@NonNull Task task) {
-                Log.d(TAG, "onNext: " + Thread.currentThread().getName());
                 Log.d(TAG, "onNext: " + task.getDescription());
                 text.setText(task.getDescription());
             }
 
             @Override
             public void onError(@NonNull Throwable e) {
-                Log.e(TAG, "onError: ", e);
+
             }
 
             @Override
             public void onComplete() {
-                Log.d(TAG, "onComplete called ");
+
             }
         });
     }

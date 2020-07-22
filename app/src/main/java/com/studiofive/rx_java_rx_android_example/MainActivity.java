@@ -37,33 +37,21 @@ public class MainActivity extends AppCompatActivity {
         final Task task  = new Task("Walk the dog", false, 3);
 //       final List<Task> tasks = DataSource.createTasksList();
 
-        Observable<Task> observable = Observable
+        Observable<Integer> observable = Observable
                 .range(0, 9)
                 .subscribeOn(Schedulers.io())
-                .map(new Function<Integer, Task>() {
-                    @Override
-                    public Task apply(Integer integer) throws Throwable {
-                        Log.d(TAG, "apply: " + Thread.currentThread().getName());
-                        return new Task("Task with priority: " + String.valueOf(integer), false, integer);
-                    }
-                })
-                .takeWhile(new Predicate<Task>() {
-                    @Override
-                    public boolean test(Task task) throws Throwable {
-                        return task.getPriority() < 9;
-                    }
-                })
+               .repeat(3)
                 .observeOn(AndroidSchedulers.mainThread());
 
-        observable.subscribe(new Observer<Task>() {
+        observable.subscribe(new Observer<Integer>() {
             @Override
             public void onSubscribe(@NonNull Disposable d) {
 
             }
 
             @Override
-            public void onNext(@NonNull Task task) {
-                Log.d(TAG, "onNext: " + task.getPriority());
+            public void onNext(@NonNull Integer integer) {
+                Log.d(TAG, "onNext: " + integer);
             }
 
             @Override

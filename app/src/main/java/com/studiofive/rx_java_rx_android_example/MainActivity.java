@@ -33,24 +33,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         text = findViewById(R.id.text);
 
-//        final Task task  = new Task("Walk the dog", false, 3);
-       final List<Task> tasks = DataSource.createTasksList();
+        final Task task  = new Task("Walk the dog", false, 3);
+//       final List<Task> tasks = DataSource.createTasksList();
 
         Observable<Task> taskObservable = Observable
-                .create(new ObservableOnSubscribe<Task>() {
-                    @Override
-                    public void subscribe(@NonNull ObservableEmitter<Task> emitter) throws Throwable {
-
-                        for (Task task: tasks){
-                        if (!emitter.isDisposed()) {
-                            emitter.onNext(task);
-                        }
-                        }
-                        if (!emitter.isDisposed()){
-                            emitter.onComplete();
-                        }
-                    }
-                })
+                .just(task)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
